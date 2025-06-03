@@ -1,20 +1,16 @@
-import java.sql.Connection;
-import java.sql.DriverManager;
+String username = request.getParameter("username");
+String query = "SELECT * FROM users WHERE username = ?";
+PreparedStatement pstmt = connection.prepareStatement(query);
+pstmt.setString(1, username);
+ResultSet rs = pstmt.executeQuery();
 
-public class DBUtil {
+String name = request.getParameter("name");
+name = StringEscapeUtils.escapeHtml4(name);
+out.println("<h1>Hello " + name + "</h1>");
 
-    public static Connection getConnection() {
-        try {
-            // ❌ Hardcoded DB credentials
-            String url = "jdbc:mysql://localhost:3306/acme_support";
-            String user = "support_user";
-            String pass = "supersecret";
+String apiKey = System.getenv("STRIPE_API_KEY");
 
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            return DriverManager.getConnection(url, user, pass);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-}
+String filename = Paths.get(request.getParameter("file")).getFileName().toString();
+File file = new File("/uploads/" + filename);
+
+log.info("User login attempted for user: {}", username);

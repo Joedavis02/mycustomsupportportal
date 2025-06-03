@@ -1,2 +1,1 @@
-String filename = Paths.get(request.getParameter("file")).getFileName().toString(); // prevents traversal
-File file = new File("/uploads/" + filename);
+log.info("User login attempted for user: {}", username);  // Avoid logging sensitive data

@@ -6,7 +6,6 @@ public class DBUtil {
     public static Connection getConnection() {
         try {
             // ❌ Hardcoded DB credentials
-            String url = "<jdbc_url>/mycustom_support";
             String user = "support_user";
             String pass = "supersecret";
 

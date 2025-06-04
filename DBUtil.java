@@ -10,7 +10,7 @@ public class DBUtil {
             String pass = "supersecret";
 
             Class.forName("com.mysql.cj.jdbc.Driver");
-            return DriverManager.getConnection(url, user, pass);
+            return DriverManager.getConnection(user, pass);
         } catch (Exception e) {
             e.printStackTrace();
             return null;

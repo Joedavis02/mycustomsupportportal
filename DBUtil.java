@@ -5,9 +5,9 @@ public class DBUtil {
 
     public static Connection getConnection() {
         try {
-            // ❌ Hardcoded DB credentials
-            String user = "support_user";
-            String pass = "supersecret";
+            // Replacing hardcoded DB credentials with environment variables
+            String user = System.getenv("DB_USER");
+            String pass = System.getenv("DB_PASS");
 
             Class.forName("com.mysql.cj.jdbc.Driver");
             return DriverManager.getConnection(user, pass);

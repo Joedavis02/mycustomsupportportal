@@ -1,76 +1,63 @@
-import javax.servlet.*;
-import javax.servlet.http.*;
-import java.io.*;
-import java.sql.*;
+import java.io.File;
+import java.nio.file.Paths;
 import java.util.Scanner;
+import org.apache.commons.text.StringEscapeUtils;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.ServletException;
+import java.io.IOException;
 
 public class SupportPortalServlet extends HttpServlet {
 
-    // ❌ Hardcoded secret API token (e.g., for third-party services)
-    private static final String SUPPORT_BOT_API_KEY = "sk_live_support_789xyz";
+    private static final String SUPPORT_BOT_API_KEY = System.getenv("SUPPORT_BOT_API_KEY");
 
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/html");
-        PrintWriter out = response.getWriter();
-
-        out.println("<h1>Acme Customer Support Portal</h1>");
-
-        // ❌ XSS Vulnerability: Displaying the user-supplied 'agent' name
-        String agent = request.getParameter("agent");
-        if (agent != null) {
-            out.println("<p>Logged in as: <strong>" + agent + "</strong></p>");
+        String name = request.getParameter("name");
+        if (name != null) {
+            name = StringEscapeUtils.escapeHtml4(name);
+            response.getWriter().println("<h1>Hello " + name + "</h1>");
         }
 
-        // ❌ SQL Injection Vulnerability: Search customer by email
         String email = request.getParameter("email");
         if (email != null) {
-            out.println("<h3>Search Results for Email: " + email + "</h3>");
-            Connection conn = DBUtil.getConnection();
-            try {
-                String query = "SELECT * FROM customers WHERE email = '" + email + "'";
-                Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery(query);
-
+            response.getWriter().println("<h3>Search Results for Email: " + email + "</h3>");
+            try (Connection conn = DBUtil.getConnection()) {
+                String query = "SELECT * FROM customers WHERE email = ?";
+                PreparedStatement pstmt = conn.prepareStatement(query);
+                pstmt.setString(1, email);
+                ResultSet rs = pstmt.executeQuery();
                 while (rs.next()) {
-                    out.println("<p>Customer Name: " + rs.getString("name") + "</p>");
-                    out.println("<p>Email: " + rs.getString("email") + "</p>");
+                    response.getWriter().println("<p>Customer Name: " + rs.getString("name") + "</p>");
+                    response.getWriter().println("<p>Email: " + rs.getString("email") + "</p>");
                 }
             } catch (Exception e) {
-                out.println("<p>Error retrieving customer data.</p>");
+                response.getWriter().println("<p>Error retrieving customer data.</p>");
             }
         }
 
-        // ❌ Directory Traversal Vulnerability: File viewer
         String fileParam = request.getParameter("attachment");
         if (fileParam != null) {
-            File file = new File("/var/acme/uploads/" + fileParam);
-            try {
-                Scanner scanner = new Scanner(file);
-                out.println("<h3>Attachment Content:</h3><pre>");
+            String filename = Paths.get(fileParam).getFileName().toString();
+            File file = new File("/var/acme/uploads/" + filename);
+            try (Scanner scanner = new Scanner(file)) {
+                response.getWriter().println("<h3>Attachment Content:</h3><pre>");
                 while (scanner.hasNextLine()) {
-                    out.println(scanner.nextLine());
+                    response.getWriter().println(scanner.nextLine());
                 }
-                out.println("</pre>");
-                scanner.close();
+                response.getWriter().println("</pre>");
             } catch (Exception e) {
-                out.println("<p>Attachment not found.</p>");
+                response.getWriter().println("<p>Attachment not found.</p>");
             }
         }
-
-        out.println("<hr>");
-        out.println("<form method='POST'><h3>Agent Login</h3>");
-        out.println("Username: <input name='username'><br>");
-        out.println("Password: <input type='password' name='password'><br>");
-        out.println("<button type='submit'>Login</button></form>");
     }
 
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // ❌ Logs sensitive user credentials
         String username = request.getParameter("username");
         String password = request.getParameter("password");
-
-        System.out.println("Agent login attempt: Username = " + username + ", Password = " + password);
-
+        System.out.println("Agent login attempt: Username = " + username);
         response.setContentType("text/html");
         response.getWriter().println("<p>Login submitted. Check logs for debug info.</p>");
     }

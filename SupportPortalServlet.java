@@ -3,11 +3,12 @@ import javax.servlet.http.*;
 import java.io.*;
 import java.sql.*;
 import java.util.Scanner;
+import org.apache.commons.text.StringEscapeUtils;
+import java.nio.file.Paths;
 
 public class SupportPortalServlet extends HttpServlet {
-
-    // ❌ Hardcoded secret API token (e.g., for third-party services)
-    private static final String SUPPORT_BOT_API_KEY = "sk_live_support_789xyz";
+    // Secure: Load API secret from environment variable
+    private static final String SUPPORT_BOT_API_KEY = System.getenv("SUPPORT_BOT_API_KEY");
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/html");
@@ -15,22 +16,23 @@ public class SupportPortalServlet extends HttpServlet {
 
         out.println("<h1>Acme Customer Support Portal</h1>");
 
-        // ❌ XSS Vulnerability: Displaying the user-supplied 'agent' name
+        // XSS Remediation: Escape user-supplied 'agent' name
         String agent = request.getParameter("agent");
         if (agent != null) {
-            out.println("<p>Logged in as: <strong>" + agent + "</strong></p>");
+            String safeAgent = StringEscapeUtils.escapeHtml4(agent);
+            out.println("<p>Logged in as: <strong>" + safeAgent + "</strong></p>");
         }
 
-        // ❌ SQL Injection Vulnerability: Search customer by email
+        // SQL Injection Remediation: Use PreparedStatement
         String email = request.getParameter("email");
         if (email != null) {
             out.println("<h3>Search Results for Email: " + email + "</h3>");
             Connection conn = DBUtil.getConnection();
             try {
-                String query = "SELECT * FROM customers WHERE email = '" + email + "'";
-                Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery(query);
-
+                String query = "SELECT * FROM customers WHERE email = ?";
+                PreparedStatement pstmt = conn.prepareStatement(query);
+                pstmt.setString(1, email);
+                ResultSet rs = pstmt.executeQuery();
                 while (rs.next()) {
                     out.println("<p>Customer Name: " + rs.getString("name") + "</p>");
                     out.println("<p>Email: " + rs.getString("email") + "</p>");
@@ -40,10 +42,11 @@ public class SupportPortalServlet extends HttpServlet {
             }
         }
 
-        // ❌ Directory Traversal Vulnerability: File viewer
+        // Directory Traversal Remediation: Sanitize and validate file path
         String fileParam = request.getParameter("attachment");
         if (fileParam != null) {
-            File file = new File("/var/acme/uploads/" + fileParam);
+            String safeFileName = Paths.get(fileParam).getFileName().toString();
+            File file = new File("/var/acme/uploads/" + safeFileName);
             try {
                 Scanner scanner = new Scanner(file);
                 out.println("<h3>Attachment Content:</h3><pre>");
@@ -65,11 +68,10 @@ public class SupportPortalServlet extends HttpServlet {
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // ❌ Logs sensitive user credentials
+        // Logging Sensitive Information Remediation: Do not log passwords
         String username = request.getParameter("username");
-        String password = request.getParameter("password");
-
-        System.out.println("Agent login attempt: Username = " + username + ", Password = " + password);
+        // String password = request.getParameter("password");
+        System.out.println("Agent login attempt for user: " + username);
 
         response.setContentType("text/html");
         response.getWriter().println("<p>Login submitted. Check logs for debug info.</p>");

@@ -5,10 +5,10 @@ public class DBUtil {
 
     public static Connection getConnection() {
         try {
-            // ❌ Hardcoded DB credentials
-            String url = "https://supportportal.com/";
-            String user = "support_user";
-            String pass = "supersecret";
+            // Secure: Load DB credentials from environment variables
+            String url = System.getenv("SUPPORT_DB_URL");
+            String user = System.getenv("SUPPORT_DB_USER");
+            String pass = System.getenv("SUPPORT_DB_PASS");
 
             Class.forName("com.mysql.cj.jdbc.Driver");
             return DriverManager.getConnection(url, user, pass);

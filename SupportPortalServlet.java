@@ -4,6 +4,7 @@ import java.io.*;
 import java.sql.*;
 import java.util.Scanner;
 import org.apache.commons.text.StringEscapeUtils;
+import java.nio.file.Paths;
 
 public class SupportPortalServlet extends HttpServlet {
     // Secure: Load API secret from environment variable
@@ -41,10 +42,11 @@ public class SupportPortalServlet extends HttpServlet {
             }
         }
 
-        // Directory Traversal Vulnerability: File viewer
+        // Directory Traversal Remediation: Sanitize and validate file path
         String fileParam = request.getParameter("attachment");
         if (fileParam != null) {
-            File file = new File("/var/acme/uploads/" + fileParam);
+            String safeFileName = Paths.get(fileParam).getFileName().toString();
+            File file = new File("/var/acme/uploads/" + safeFileName);
             try {
                 Scanner scanner = new Scanner(file);
                 out.println("<h3>Attachment Content:</h3><pre>");

@@ -5,9 +5,8 @@ import java.sql.*;
 import java.util.Scanner;
 
 public class SupportPortalServlet extends HttpServlet {
-
-    // ❌ Hardcoded secret API token (e.g., for third-party services)
-    private static final String SUPPORT_BOT_API_KEY = "sk_live_support_789xyz";
+    // Secure: Load API secret from environment variable
+    private static final String SUPPORT_BOT_API_KEY = System.getenv("SUPPORT_BOT_API_KEY");
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/html");
@@ -15,13 +14,13 @@ public class SupportPortalServlet extends HttpServlet {
 
         out.println("<h1>Acme Customer Support Portal</h1>");
 
-        // ❌ XSS Vulnerability: Displaying the user-supplied 'agent' name
+        // XSS Vulnerability: Displaying the user-supplied 'agent' name
         String agent = request.getParameter("agent");
         if (agent != null) {
             out.println("<p>Logged in as: <strong>" + agent + "</strong></p>");
         }
 
-        // ❌ SQL Injection Vulnerability: Search customer by email
+        // SQL Injection Vulnerability: Search customer by email
         String email = request.getParameter("email");
         if (email != null) {
             out.println("<h3>Search Results for Email: " + email + "</h3>");
@@ -30,7 +29,6 @@ public class SupportPortalServlet extends HttpServlet {
                 String query = "SELECT * FROM customers WHERE email = '" + email + "'";
                 Statement stmt = conn.createStatement();
                 ResultSet rs = stmt.executeQuery(query);
-
                 while (rs.next()) {
                     out.println("<p>Customer Name: " + rs.getString("name") + "</p>");
                     out.println("<p>Email: " + rs.getString("email") + "</p>");
@@ -40,7 +38,7 @@ public class SupportPortalServlet extends HttpServlet {
             }
         }
 
-        // ❌ Directory Traversal Vulnerability: File viewer
+        // Directory Traversal Vulnerability: File viewer
         String fileParam = request.getParameter("attachment");
         if (fileParam != null) {
             File file = new File("/var/acme/uploads/" + fileParam);
@@ -65,10 +63,9 @@ public class SupportPortalServlet extends HttpServlet {
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // ❌ Logs sensitive user credentials
+        // Logging Sensitive Information Vulnerability
         String username = request.getParameter("username");
         String password = request.getParameter("password");
-
         System.out.println("Agent login attempt: Username = " + username + ", Password = " + password);
 
         response.setContentType("text/html");

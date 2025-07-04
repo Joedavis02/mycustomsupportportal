@@ -20,15 +20,16 @@ public class SupportPortalServlet extends HttpServlet {
             out.println("<p>Logged in as: <strong>" + agent + "</strong></p>");
         }
 
-        // SQL Injection Vulnerability: Search customer by email
+        // SQL Injection Remediation: Use PreparedStatement
         String email = request.getParameter("email");
         if (email != null) {
             out.println("<h3>Search Results for Email: " + email + "</h3>");
             Connection conn = DBUtil.getConnection();
             try {
-                String query = "SELECT * FROM customers WHERE email = '" + email + "'";
-                Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery(query);
+                String query = "SELECT * FROM customers WHERE email = ?";
+                PreparedStatement pstmt = conn.prepareStatement(query);
+                pstmt.setString(1, email);
+                ResultSet rs = pstmt.executeQuery();
                 while (rs.next()) {
                     out.println("<p>Customer Name: " + rs.getString("name") + "</p>");
                     out.println("<p>Email: " + rs.getString("email") + "</p>");

@@ -68,10 +68,10 @@ public class SupportPortalServlet extends HttpServlet {
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // Logging Sensitive Information Vulnerability
+        // Logging Sensitive Information Remediation: Do not log passwords
         String username = request.getParameter("username");
-        String password = request.getParameter("password");
-        System.out.println("Agent login attempt: Username = " + username + ", Password = " + password);
+        // String password = request.getParameter("password");
+        System.out.println("Agent login attempt for user: " + username);
 
         response.setContentType("text/html");
         response.getWriter().println("<p>Login submitted. Check logs for debug info.</p>");

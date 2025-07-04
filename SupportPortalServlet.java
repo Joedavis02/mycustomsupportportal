@@ -3,6 +3,7 @@ import javax.servlet.http.*;
 import java.io.*;
 import java.sql.*;
 import java.util.Scanner;
+import org.apache.commons.text.StringEscapeUtils;
 
 public class SupportPortalServlet extends HttpServlet {
     // Secure: Load API secret from environment variable
@@ -14,10 +15,11 @@ public class SupportPortalServlet extends HttpServlet {
 
         out.println("<h1>Acme Customer Support Portal</h1>");
 
-        // XSS Vulnerability: Displaying the user-supplied 'agent' name
+        // XSS Remediation: Escape user-supplied 'agent' name
         String agent = request.getParameter("agent");
         if (agent != null) {
-            out.println("<p>Logged in as: <strong>" + agent + "</strong></p>");
+            String safeAgent = StringEscapeUtils.escapeHtml4(agent);
+            out.println("<p>Logged in as: <strong>" + safeAgent + "</strong></p>");
         }
 
         // SQL Injection Remediation: Use PreparedStatement

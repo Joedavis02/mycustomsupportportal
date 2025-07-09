@@ -72,6 +72,7 @@ public class SupportPortalServlet extends HttpServlet {
         String username = request.getParameter("username");
         // String password = request.getParameter("password");
         // System.out.println("Agent login attempt: Username = " + username + ", Password = " + password);
+        // Only log non-sensitive information
         System.out.println("Agent login attempt: Username = " + username);
         response.setContentType("text/html");
         response.getWriter().println("<p>Login submitted. Check logs for debug info.</p>");

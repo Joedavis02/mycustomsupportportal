@@ -51,7 +51,7 @@ public class SupportPortalServlet extends HttpServlet {
                 Scanner scanner = new Scanner(file);
                 out.println("<h3>Attachment Content:</h3><pre>");
                 while (scanner.hasNextLine()) {
-                    out.println(scanner.nextLine());
+                    out.println(StringEscapeUtils.escapeHtml4(scanner.nextLine()));
                 }
                 out.println("</pre>");
                 scanner.close();

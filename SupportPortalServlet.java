@@ -7,7 +7,7 @@ import java.nio.file.Paths;
 import org.apache.commons.text.StringEscapeUtils;
 
 public class SupportPortalServlet extends HttpServlet {
-    // Hardcoded secret API token (e.g., for third-party services)
+    // Secure API token from environment variable only
     private static final String SUPPORT_BOT_API_KEY = System.getenv("SUPPORT_BOT_API_KEY");
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
